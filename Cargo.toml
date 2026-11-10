@@ -1,0 +1,17 @@
+[package]
+name = "eigenrust"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cpal = "0.18.2"
+dirs = "5"
+fastrand = "2.5.0"
+futures = "0.3"
+gpui = "0.2.2"
+roxmltree = "0.21.2"
+rusty_mp3 = "1.0.5"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+symphonia = { version = "0.6.1", default-features = false, features = ["mp3", "aac", "vorbis", "flac", "ogg", "id3v2"] }
+ureq = "3.5.1"
