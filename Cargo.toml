@@ -3,6 +3,12 @@ name = "eigenrust"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+# Compile the Mac graphics shaders when the app starts instead of when it is built.
+# Building then needs only the Xcode command line tools, not the Metal toolchain that
+# newer Xcodes make you download separately. Meant for people building from source.
+runtime-shaders = ["gpui/runtime_shaders"]
+
 [dependencies]
 cpal = "0.18.2"
 dirs = "5"

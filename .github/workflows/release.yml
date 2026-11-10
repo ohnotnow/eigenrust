@@ -1,0 +1,52 @@
+name: Release
+
+# Pushing a tag like v0.1.0 builds the Mac app and publishes it as a GitHub release.
+# Running the workflow by hand builds the app without publishing, to check the build works.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    name: Mac app (Apple Silicon)
+    runs-on: macos-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check the tag matches the version in Cargo.toml
+        if: github.ref_type == 'tag'
+        run: |
+          version="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match version $version in Cargo.toml"
+            exit 1
+          fi
+
+      # GPUI compiles its shaders with Apple's Metal compiler, which newer Xcodes
+      # no longer include until it is downloaded.
+      - name: Install Apple's Metal toolchain
+        run: xcodebuild -downloadComponent MetalToolchain
+
+      - name: Build and package
+        run: scripts/package-macos.sh
+
+      - name: Publish the release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.zip \
+            --title "EigenRadio ${GITHUB_REF_NAME#v}" \
+            --generate-notes \
+            --notes "Download the zip, unzip it, and move EigenRadio to your Applications folder.
+
+          The app is not notarised by Apple, so the first time you open it macOS will say it cannot be verified. Open System Settings, go to Privacy & Security, scroll down and choose Open Anyway. You only need to do this once.
+
+          For Apple Silicon Macs (M1 or newer)."
