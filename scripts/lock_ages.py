@@ -84,3 +84,5 @@ with ThreadPoolExecutor(max_workers=8) as pool:
     results = [r for r in pool.map(check, packages) if r]
 print("\n".join(results) if results else "all clear")
 print(f"checked {len(packages)} crates: published before {cutoff} passes")
+# A failing exit code lets build scripts stop when something is too new.
+sys.exit(1 if results else 0)
